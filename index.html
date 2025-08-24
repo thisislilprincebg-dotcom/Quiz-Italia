@@ -2,23 +2,95 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Quiz Italia</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <div id="main-menu">
+  <header>
     <h1>Quiz Italia</h1>
-    <button id="start-game">Inizia partita</button>
-    <button id="continue-game">Continua partita</button>
-    <button id="add-questions">Aggiungi domande</button>
-    <button id="edit-questions">Modifica domande</button>
-    <p id="token-display">Gettoni: 0</p>
-  </div>
+    <div id="hud">
+      <span id="tokens">Gettoni: 0</span>
+      <span id="timer">⏱️ 20</span>
+      <span id="progress">0 / 20</span>
+    </div>
+  </header>
 
-  <div id="game-area" style="display:none;"></div>
-  <div id="question-form" style="display:none;"></div>
-  <div id="edit-area" style="display:none;"></div>
+  <main>
+    <!-- Main menu -->
+    <section id="main-menu">
+      <div class="menu">
+        <button class="primary" id="start-game">Inizia partita</button>
+        <button id="continue-game">Continua partita</button>
+        <button id="add-questions">Aggiungi domande</button>
+        <button id="edit-questions">Modifica domande</button>
+      </div>
+
+      <div id="category-select" class="card" style="display:none;">
+        <h2>Scegli una categoria</h2>
+        <div id="category-list"></div>
+        <button class="ghost" id="close-category">Chiudi</button>
+      </div>
+    </section>
+
+    <!-- Game area -->
+    <section id="game-area" style="display:none;">
+      <div class="card">
+        <div class="breadcrumb"><button class="ghost sm" id="back-menu">⟵ Menu</button></div>
+        <h2 id="question-text"></h2>
+        <div id="options" class="options"></div>
+
+        <div class="lifelines">
+          <button id="help5050">50/50 (−50 gettoni)</button>
+          <button id="helpReveal">Mostra risposta (−100 gettoni)</button>
+        </div>
+
+        <div class="controls">
+          <button id="next-question" disabled>Prossima domanda</button>
+          <button class="ghost" id="save-exit">Salva e esci</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Add question form -->
+    <section id="question-form" style="display:none;">
+      <div class="card">
+        <h2>Aggiungi Domanda</h2>
+        <label>Categoria
+          <select id="newCat"></select>
+        </label>
+        <label>Testo della domanda
+          <input id="newQ" placeholder="Es: Capitale d'Italia?" />
+        </label>
+        <label>Opzione 1 <input id="opt1" /></label>
+        <label>Opzione 2 <input id="opt2" /></label>
+        <label>Opzione 3 <input id="opt3" /></label>
+        <label>Opzione 4 <input id="opt4" /></label>
+        <label>Risposta corretta (uguale a una delle opzioni)
+          <input id="ans" />
+        </label>
+        <div class="controls">
+          <button id="btn-save-new">Salva</button>
+          <button class="ghost" id="btn-back-home1">Indietro</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Edit questions -->
+    <section id="edit-area" style="display:none;">
+      <div class="card">
+        <h2>Modifica Domande</h2>
+        <div class="filters">
+          <label>Categoria
+            <select id="filterCat"></select>
+          </label>
+          <button id="refreshList">Aggiorna</button>
+        </div>
+        <div id="edit-list"></div>
+        <button class="ghost" id="btn-back-home2">Indietro</button>
+      </div>
+    </section>
+  </main>
 
   <script src="questions.js"></script>
   <script src="main.js"></script>
