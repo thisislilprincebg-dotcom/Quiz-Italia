@@ -1,19 +1,17 @@
-# Quiz Culturale Italiano
+# Quiz Culturale Italiano Avanzato
 
-Un semplice quiz a punti su cultura generale italiana.  
-Funziona su **qualsiasi browser** (anche su iPhone).
-
-## Come usarlo
-1. Apri il link GitHub Pages:  
-   ```
-   https://tuonomeutente.github.io/quiz-culturale/
-   ```
-2. Su iPhone, aprilo in Safari → clicca **Condividi → Aggiungi alla schermata Home**.  
-3. Ti comparirà come un’app con icona personalizzata.
+Questo è un quiz interattivo in HTML/CSS/JS con 100 domande divise per categoria.
 
 ## Funzioni
-- Timer 20 secondi per domanda  
-- Gettoni (+10 risposta giusta, -5 risposta sbagliata)  
-- Aiuti:  
-  - 50/50 (-20 gettoni)  
-  - Risposta giusta (-100 gettoni)
+- 10 categorie con 10 domande ciascuna (100 domande totali)
+- Modalità: Partita Veloce, Carriera, Scegli Categoria
+- Possibilità di aggiungere nuove domande manualmente
+- 20 domande casuali a partita
+- Salvataggio in localStorage
+
+## Come usarlo
+1. Carica i file su un repository GitHub pubblico.
+2. Attiva GitHub Pages nelle impostazioni.
+3. Apri il link dal tuo iPhone o computer.
+4. (Opzionale) Aggiungi alla schermata Home su iOS per usarlo come app.
+
