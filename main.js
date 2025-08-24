@@ -1,162 +1,549 @@
-// Carica domande da localStorage oppure da questions.js
-function loadQuestions() {
-  const saved = localStorage.getItem('questions');
-  return saved ? JSON.parse(saved) : questions;
+// =========================
+// Config e stato
+// =========================
+const CATEGORIES = [
+  { key: 'sport', name: 'Sport', cost: 100 },
+  { key: 'calcio', name: 'Calcio', cost: 100 },
+  { key: 'cultura', name: 'Cultura Generale', cost: 100 },
+  { key: 'gossip', name: 'Gossip', cost: 100 },
+  { key: 'moda', name: 'Moda', cost: 100 },
+  { key: 'politica', name: 'Politica', cost: 200 },
+  { key: 'cucina', name: 'Cucina', cost: 100 },
+  { key: 'geografia_it', name: 'Geografia (Italia)', cost: 100 },
+  { key: 'geografia_world', name: 'Geografia (Mondo)', cost: 200 },
+];
+
+const QUESTIONS_PER_GAME = 20;
+const TIME_PER_QUESTION = 20; // seconds
+const TOKENS_PER_CORRECT = 100;
+const COST_5050 = 50;
+const COST_REVEAL = 100;
+
+let state = {
+  tokens: 0,
+  unlocked: {},   // {categoryKey: true}
+  askedGlobal: [], // array di id già apparsi (per non ripetere)
+  currentGame: null, // {category, questionIds, index, score, tokens, remainingTime}
+};
+
+// =========================
+// Storage helpers
+// =========================
+function loadState() {
+  const raw = localStorage.getItem('qi_state');
+  if (raw) {
+    try { state = JSON.parse(raw); }
+    catch (e) {}
+  }
+  // Predefinito: sblocca "Cultura Generale" di base
+  if (!state.unlocked || typeof state.unlocked !== 'object') state.unlocked = {};
+  if (Object.keys(state.unlocked).length === 0) {
+    state.unlocked['cultura'] = true;
+  }
+  if (!Array.isArray(state.askedGlobal)) state.askedGlobal = [];
+  if (typeof state.tokens !== 'number') state.tokens = 0;
+  if (state.currentGame && typeof state.currentGame.remainingTime !== 'number') {
+    state.currentGame.remainingTime = TIME_PER_QUESTION;
+  }
+  saveState();
 }
 
-function saveQuestions(q) {
-  localStorage.setItem('questions', JSON.stringify(q));
+function saveState() {
+  localStorage.setItem('qi_state', JSON.stringify(state));
 }
 
-let currentGame = null;
+function clearCurrentGame() {
+  state.currentGame = null;
+  saveState();
+}
 
-// Event listeners
-document.getElementById('start-game').addEventListener('click', startGame);
+// =========================
+// UI references
+// =========================
+const elMenu = document.getElementById('main-menu');
+const elCategoryCard = document.getElementById('category-select');
+const elCategoryList = document.getElementById('category-list');
+const elCloseCategory = document.getElementById('close-category');
+const elGame = document.getElementById('game-area');
+const elQText = document.getElementById('question-text');
+const elOptions = document.getElementById('options');
+const elNext = document.getElementById('next-question');
+const elSaveExit = document.getElementById('save-exit');
+const el5050 = document.getElementById('help5050');
+const elReveal = document.getElementById('helpReveal');
+const elTokens = document.getElementById('tokens');
+const elTimer = document.getElementById('timer');
+const elProgress = document.getElementById('progress');
+
+const elAddForm = document.getElementById('question-form');
+const elEditArea = document.getElementById('edit-area');
+
+// Buttons
+document.getElementById('start-game').addEventListener('click', openCategorySelect);
 document.getElementById('continue-game').addEventListener('click', continueGame);
-document.getElementById('add-questions').addEventListener('click', addQuestions);
-document.getElementById('edit-questions').addEventListener('click', editQuestions);
+document.getElementById('add-questions').addEventListener('click', showAddForm);
+document.getElementById('edit-questions').addEventListener('click', showEditArea);
+elCloseCategory.addEventListener('click', () => { elCategoryCard.style.display = 'none'; });
 
-function startGame() {
-  const q = loadQuestions();
-  // estrai 10 domande random
-  const selected = q.sort(() => 0.5 - Math.random()).slice(0, 10);
-  currentGame = { index: 0, score: 0, questions: selected };
-  localStorage.setItem('currentGame', JSON.stringify(currentGame));
-  showQuestion();
+document.getElementById('btn-back-home1')?.addEventListener('click', backHome);
+document.getElementById('btn-back-home2')?.addEventListener('click', backHome);
+
+document.getElementById('btn-save-new')?.addEventListener('click', saveNewQuestion);
+document.getElementById('refreshList')?.addEventListener('click', renderEditList);
+
+// Lifelines
+el5050.addEventListener('click', lifeline5050);
+elReveal.addEventListener('click', lifelineReveal);
+elNext.addEventListener('click', nextQuestion);
+elSaveExit.addEventListener('click', saveAndExit);
+
+// Edit filters
+const filterCat = document.getElementById('filterCat');
+const newCat = document.getElementById('newCat');
+
+// =========================
+// Init
+// =========================
+loadState();
+updateHud();
+setupCategorySelectors();
+if (state.currentGame) {
+  // Offri all'utente la possibilità di riprendere
+  // (non auto-avviare: resta coerente col pulsante "Continua")
+}
+
+// =========================
+// Category selection & unlock
+// =========================
+function openCategorySelect() {
+  renderCategoryList();
+  showOnly('menu');
+  elCategoryCard.style.display = 'block';
+}
+function renderCategoryList() {
+  elCategoryList.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const locked = !state.unlocked[cat.key];
+    const div = document.createElement('div');
+    div.className = `category ${locked ? 'locked' : ''}`;
+    div.innerHTML = `
+      <div class="title">${cat.name}</div>
+      <div class="badge">${locked ? 'Bloccata' : 'Sbloccata'}</div>
+      <div> Costo sblocco: ${cat.cost} gettoni</div>
+      <div class="controls">
+        ${locked
+          ? `<button data-key="${cat.key}" class="unlock">Sblocca</button>`
+          : `<button data-key="${cat.key}" class="play">Gioca</button>`
+        }
+      </div>
+    `;
+    elCategoryList.appendChild(div);
+  });
+
+  elCategoryList.querySelectorAll('button.unlock').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const key = e.target.getAttribute('data-key');
+      unlockCategory(key);
+    });
+  });
+  elCategoryList.querySelectorAll('button.play').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const key = e.target.getAttribute('data-key');
+      startGame(key);
+    });
+  });
+}
+
+function unlockCategory(key) {
+  const cat = CATEGORIES.find(c => c.key === key);
+  if (!cat) return;
+  if (state.unlocked[key]) return;
+  if (state.tokens < cat.cost) {
+    alert(`Servono ${cat.cost} gettoni per sbloccare ${cat.name}.`);
+    return;
+  }
+  state.tokens -= cat.cost;
+  state.unlocked[key] = true;
+  saveState();
+  updateHud();
+  renderCategoryList();
+  alert(`${cat.name} sbloccata!`);
+}
+
+// =========================
+// Game flow
+// =========================
+let countdown = null;
+
+function startGame(categoryKey) {
+  // Prepara domande: 20 diverse mai apparse (finché possibile)
+  const all = loadQuestions();
+  const pool = all.filter(q => q.category === categoryKey && !state.askedGlobal.includes(q.id));
+  if (pool.length < QUESTIONS_PER_GAME) {
+    // Se finito il pool, consenti reset per quella categoria
+    if (!confirm(`Hai già visto molte domande di ${categoryKey}. Vuoi resettare lo storico per questa categoria?`)) {
+      return;
+    } else {
+      // reset parziale: rimuovi da askedGlobal quelle di questa categoria
+      const idsOfCat = all.filter(q => q.category === categoryKey).map(q => q.id);
+      state.askedGlobal = state.askedGlobal.filter(id => !idsOfCat.includes(id));
+      saveState();
+    }
+  }
+  const pool2 = all.filter(q => q.category === categoryKey && !state.askedGlobal.includes(q.id));
+  const shuffled = pool2.sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME);
+  const questionIds = shuffled.map(q => q.id);
+
+  state.currentGame = {
+    category: categoryKey,
+    questionIds,
+    index: 0,
+    score: 0,
+    tokensEarned: 0,
+    remainingTime: TIME_PER_QUESTION,
+    used5050: {}, // per domanda
+    usedReveal: {},
+  };
+  saveState();
+  showOnly('game');
+  renderCurrentQuestion();
+  startTimer();
 }
 
 function continueGame() {
-  const saved = localStorage.getItem('currentGame');
-  if (!saved) {
-    alert("Nessuna partita salvata!");
+  if (!state.currentGame) {
+    alert('Nessuna partita salvata.');
     return;
   }
-  currentGame = JSON.parse(saved);
-  showQuestion();
+  showOnly('game');
+  renderCurrentQuestion();
+  startTimer();
 }
 
-function showQuestion() {
-  document.getElementById('main-menu').style.display = 'none';
-  document.getElementById('question-form').style.display = 'none';
-  document.getElementById('edit-area').style.display = 'none';
-  document.getElementById('game-area').style.display = 'block';
+function showOnly(which) {
+  elMenu.style.display = which === 'menu' ? 'block' : 'block';
+  document.getElementById('category-select').style.display = 'none';
 
-  const q = currentGame.questions[currentGame.index];
-  if (!q) {
-    alert(`Partita finita! Punteggio: ${currentGame.score}/${currentGame.questions.length}`);
-    localStorage.removeItem('currentGame');
-    location.reload();
-    return;
+  if (which === 'game') {
+    elMenu.style.display = 'none';
+    elGame.style.display = 'block';
+    elAddForm.style.display = 'none';
+    elEditArea.style.display = 'none';
+  } else if (which === 'add') {
+    elMenu.style.display = 'none';
+    elGame.style.display = 'none';
+    elAddForm.style.display = 'block';
+    elEditArea.style.display = 'none';
+  } else if (which === 'edit') {
+    elMenu.style.display = 'none';
+    elGame.style.display = 'none';
+    elAddForm.style.display = 'none';
+    elEditArea.style.display = 'block';
+  } else {
+    // menu
+    elGame.style.display = 'none';
+    elAddForm.style.display = 'none';
+    elEditArea.style.display = 'none';
   }
+}
 
-  let html = `<h2>${q.text}</h2>`;
-  q.options.forEach(opt => {
-    html += `<button onclick="answer('${opt}')">${opt}</button><br>`;
+function renderCurrentQuestion() {
+  updateHud();
+  const q = getCurrentQuestion();
+  if (!q) return endGame();
+
+  elQText.textContent = q.text;
+  elOptions.innerHTML = '';
+
+  const opts = shuffle([...q.options]);
+  opts.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.textContent = opt;
+    btn.addEventListener('click', () => chooseAnswer(btn, q, opt));
+    elOptions.appendChild(btn);
   });
-  document.getElementById('game-area').innerHTML = html;
+
+  elNext.disabled = true;
+  // reset lifeline visibility per domanda
+  el5050.disabled = !!state.currentGame.used5050[q.id];
+  elReveal.disabled = !!state.currentGame.usedReveal[q.id];
 }
 
-function answer(opt) {
-  const q = currentGame.questions[currentGame.index];
-  if (opt === q.answer) currentGame.score++;
-  currentGame.index++;
-  localStorage.setItem('currentGame', JSON.stringify(currentGame));
-  showQuestion();
+function chooseAnswer(btn, q, opt) {
+  stopTimer();
+  const isCorrect = opt === q.answer;
+  Array.from(elOptions.children).forEach(b => {
+    if (b.textContent === q.answer) b.classList.add('correct');
+    if (b !== btn && b.textContent !== q.answer) b.classList.remove('correct', 'wrong');
+  });
+  if (isCorrect) {
+    btn.classList.add('correct');
+    state.currentGame.score++;
+    state.tokens += TOKENS_PER_CORRECT;
+    state.currentGame.tokensEarned = (state.currentGame.tokensEarned || 0) + TOKENS_PER_CORRECT;
+    updateHud();
+  } else {
+    btn.classList.add('wrong');
+  }
+  elNext.disabled = false;
+  saveState();
 }
 
-// ----------------------------
-// Aggiunta di nuove domande
-// ----------------------------
-function addQuestions() {
-  document.getElementById('main-menu').style.display = 'none';
-  document.getElementById('game-area').style.display = 'none';
-  document.getElementById('edit-area').style.display = 'none';
-  document.getElementById('question-form').style.display = 'block';
+function nextQuestion() {
+  const q = getCurrentQuestion();
+  if (!q) return;
+  // segna come già vista a livello globale
+  if (!state.askedGlobal.includes(q.id)) state.askedGlobal.push(q.id);
 
-  document.getElementById('question-form').innerHTML = `
-    <h2>Aggiungi Domanda</h2>
-    <input id="newQ" placeholder="Testo della domanda"><br>
-    <input id="opt1" placeholder="Opzione 1"><br>
-    <input id="opt2" placeholder="Opzione 2"><br>
-    <input id="opt3" placeholder="Opzione 3"><br>
-    <input id="ans" placeholder="Risposta corretta"><br>
-    <button onclick="saveNewQuestion()">Salva</button>
-    <button onclick="location.reload()">Indietro</button>
-  `;
+  state.currentGame.index++;
+  state.currentGame.remainingTime = TIME_PER_QUESTION;
+  saveState();
+  renderCurrentQuestion();
+  startTimer();
+}
+
+function endGame() {
+  stopTimer();
+  const total = state.currentGame ? state.currentGame.questionIds.length : QUESTIONS_PER_GAME;
+  alert(`Partita finita!\nPunteggio: ${state.currentGame.score}/${total}\nGettoni guadagnati: ${state.currentGame.tokensEarned || 0}`);
+  clearCurrentGame();
+  showOnly('menu');
+}
+
+function getCurrentQuestion() {
+  if (!state.currentGame) return null;
+  const all = loadQuestions();
+  const id = state.currentGame.questionIds[state.currentGame.index];
+  return all.find(x => x.id === id);
+}
+
+// =========================
+// Timer
+// =========================
+function startTimer() {
+  stopTimer();
+  renderTimer();
+  countdown = setInterval(() => {
+    state.currentGame.remainingTime--;
+    if (state.currentGame.remainingTime <= 0) {
+      state.currentGame.remainingTime = 0;
+      saveState();
+      renderTimer();
+      // tempo scaduto => marcala come sbagliata e abilita Next
+      timeUp();
+    } else {
+      saveState();
+      renderTimer();
+    }
+  }, 1000);
+}
+function stopTimer() {
+  if (countdown) clearInterval(countdown);
+  countdown = null;
+}
+function renderTimer() {
+  elTimer.textContent = `⏱️ ${state.currentGame ? state.currentGame.remainingTime : TIME_PER_QUESTION}`;
+  elProgress.textContent = `${state.currentGame ? state.currentGame.index + 1 : 0} / ${state.currentGame ? state.currentGame.questionIds.length : QUESTIONS_PER_GAME}`;
+}
+function timeUp() {
+  // evidenzia la risposta corretta e consenti Next
+  const q = getCurrentQuestion();
+  Array.from(elOptions.children).forEach(b => {
+    if (b.textContent === q.answer) b.classList.add('correct');
+  });
+  elNext.disabled = false;
+}
+
+// =========================
+// Lifelines
+// =========================
+function lifeline5050() {
+  const q = getCurrentQuestion();
+  if (!q) return;
+  if (state.currentGame.used5050[q.id]) return;
+  if (state.tokens < COST_5050) { alert('Gettoni insufficienti.'); return; }
+  state.tokens -= COST_5050;
+  state.currentGame.used5050[q.id] = true;
+  updateHud();
+  saveState();
+
+  // Rimuovi due opzioni sbagliate
+  const wrongButtons = Array.from(elOptions.children).filter(b => b.textContent !== q.answer);
+  shuffle(wrongButtons).slice(0, 2).forEach(b => { b.disabled = true; b.style.opacity = .6; });
+  el5050.disabled = true;
+}
+
+function lifelineReveal() {
+  const q = getCurrentQuestion();
+  if (!q) return;
+  if (state.currentGame.usedReveal[q.id]) return;
+  if (state.tokens < COST_REVEAL) { alert('Gettoni insufficienti.'); return; }
+  state.tokens -= COST_REVEAL;
+  state.currentGame.usedReveal[q.id] = true;
+  updateHud();
+  saveState();
+
+  // Evidenzia risposta corretta
+  Array.from(elOptions.children).forEach(b => {
+    if (b.textContent === q.answer) b.classList.add('correct');
+  });
+  elReveal.disabled = true;
+  // facoltativo: abilita subito next
+  elNext.disabled = false;
+}
+
+// =========================
+// Save & Exit
+// =========================
+function saveAndExit() {
+  stopTimer();
+  saveState();
+  alert('Partita salvata! Puoi continuare dal menu principale.');
+  showOnly('menu');
+}
+
+function backHome() {
+  showOnly('menu');
+}
+
+// =========================
+// Add question
+// =========================
+function showAddForm() {
+  showOnly('add');
+  // populate categories
+  newCat.innerHTML = CATEGORIES.map(c => `<option value="${c.key}">${c.name}</option>`).join('');
 }
 
 function saveNewQuestion() {
-  const q = loadQuestions();
+  const all = loadQuestions();
   const newQ = {
     id: Date.now(),
-    text: document.getElementById('newQ').value,
+    category: document.getElementById('newCat').value,
+    text: document.getElementById('newQ').value.trim(),
     options: [
-      document.getElementById('opt1').value,
-      document.getElementById('opt2').value,
-      document.getElementById('opt3').value
-    ],
-    answer: document.getElementById('ans').value
+      document.getElementById('opt1').value.trim(),
+      document.getElementById('opt2').value.trim(),
+      document.getElementById('opt3').value.trim(),
+      document.getElementById('opt4').value.trim(),
+    ].filter(Boolean),
+    answer: document.getElementById('ans').value.trim()
   };
-  q.push(newQ);
-  saveQuestions(q);
-  alert("Domanda aggiunta!");
-  location.reload();
+  if (!newQ.text || newQ.options.length < 2 || !newQ.answer) {
+    alert('Compila tutti i campi e inserisci almeno 2 opzioni.');
+    return;
+  }
+  if (!newQ.options.includes(newQ.answer)) {
+    alert('La risposta corretta deve coincidere con una delle opzioni.');
+    return;
+  }
+  const merged = all.concat(newQ);
+  saveQuestions(merged);
+  alert('Domanda aggiunta!');
+  showOnly('menu');
 }
 
-// ----------------------------
-// Modifica delle domande
-// ----------------------------
-function editQuestions() {
-  document.getElementById('main-menu').style.display = 'none';
-  document.getElementById('game-area').style.display = 'none';
-  document.getElementById('question-form').style.display = 'none';
-  document.getElementById('edit-area').style.display = 'block';
+// =========================
+// Edit questions
+// =========================
+function showEditArea() {
+  showOnly('edit');
+  filterCat.innerHTML = `<option value="">Tutte</option>` + CATEGORIES.map(c => `<option value="${c.key}">${c.name}</option>`).join('');
+  renderEditList();
+}
 
-  const q = loadQuestions();
-  let html = "<h2>Modifica Domande</h2>";
-  q.forEach((question, i) => {
-    html += `
-      <div>
-        <b>${i+1}. ${question.text}</b>
-        <button onclick="editSingle(${question.id})">Modifica</button>
-      </div>
-    `;
+function renderEditList() {
+  const all = loadQuestions();
+  const cat = filterCat.value;
+  const list = cat ? all.filter(q => q.category === cat) : all;
+  const wrap = document.getElementById('edit-list');
+  wrap.innerHTML = '';
+  list.forEach(q => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `<div><b>[${q.category}]</b> ${q.text}</div>
+      <div class="controls">
+        <button data-id="${q.id}" class="edit">Modifica</button>
+        <button data-id="${q.id}" class="del">Elimina</button>
+      </div>`;
+    wrap.appendChild(row);
   });
-  html += `<button onclick="location.reload()">Indietro</button>`;
-  document.getElementById('edit-area').innerHTML = html;
+  wrap.querySelectorAll('button.edit').forEach(btn => {
+    btn.addEventListener('click', () => openEditDialog(btn.getAttribute('data-id')));
+  });
+  wrap.querySelectorAll('button.del').forEach(btn => {
+    btn.addEventListener('click', () => deleteQuestion(btn.getAttribute('data-id')));
+  });
 }
 
-function editSingle(id) {
-  const q = loadQuestions();
-  const question = q.find(el => el.id === id);
-  if (!question) return;
+function openEditDialog(id) {
+  id = parseInt(id, 10);
+  const all = loadQuestions();
+  const q = all.find(x => x.id === id);
+  if (!q) return;
+  const text = prompt('Testo domanda:', q.text);
+  if (text === null) return;
+  const opts = prompt('Opzioni (separate da |):', q.options.join('|'));
+  if (opts === null) return;
+  const ans = prompt('Risposta corretta (deve esistere nelle opzioni):', q.answer);
+  if (ans === null) return;
+  const cat = prompt('Categoria (key):', q.category);
+  if (cat === null) return;
 
-  document.getElementById('edit-area').innerHTML = `
-    <h2>Modifica Domanda</h2>
-    <input id="editQ" value="${question.text}"><br>
-    <input id="edit1" value="${question.options[0]}"><br>
-    <input id="edit2" value="${question.options[1]}"><br>
-    <input id="edit3" value="${question.options[2]}"><br>
-    <input id="editAns" value="${question.answer}"><br>
-    <button onclick="saveEditedQuestion(${id})">Salva</button>
-    <button onclick="editQuestions()">Indietro</button>
-  `;
+  const options = opts.split('|').map(s => s.trim()).filter(Boolean);
+  if (!options.includes(ans.trim())) {
+    alert('La risposta corretta deve essere in elenco.');
+    return;
+  }
+  q.text = text.trim();
+  q.options = options;
+  q.answer = ans.trim();
+  q.category = cat.trim();
+  saveQuestions(all);
+  renderEditList();
 }
 
-function saveEditedQuestion(id) {
-  const q = loadQuestions();
-  const idx = q.findIndex(el => el.id === id);
-  if (idx === -1) return;
+function deleteQuestion(id) {
+  id = parseInt(id, 10);
+  if (!confirm('Eliminare la domanda?')) return;
+  const all = loadQuestions().filter(q => q.id !== id);
+  saveQuestions(all);
+  renderEditList();
+}
 
-  q[idx].text = document.getElementById('editQ').value;
-  q[idx].options = [
-    document.getElementById('edit1').value,
-    document.getElementById('edit2').value,
-    document.getElementById('edit3').value
-  ];
-  q[idx].answer = document.getElementById('editAns').value;
+// =========================
+// Questions storage (merge with defaults)
+// =========================
+function loadQuestions() {
+  const saved = localStorage.getItem('questions');
+  let base = Array.isArray(DEFAULT_QUESTIONS) ? DEFAULT_QUESTIONS : [];
+  if (saved) {
+    try {
+      const userQ = JSON.parse(saved);
+      if (Array.isArray(userQ)) {
+        // evita id duplicati: mantieni userQ come override (stesso id -> sostituisce)
+        const map = new Map(base.map(q => [q.id, q]));
+        userQ.forEach(q => map.set(q.id, q));
+        base = Array.from(map.values());
+      }
+    } catch (e) {}
+  }
+  return base;
+}
+function saveQuestions(arr) {
+  localStorage.setItem('questions', JSON.stringify(arr));
+}
 
-  saveQuestions(q);
-  alert("Domanda aggiornata!");
-  editQuestions();
+// =========================
+// Utils
+// =========================
+function updateHud() {
+  elTokens.textContent = `Gettoni: ${state.tokens}`;
+  renderTimer();
+}
+function shuffle(a) {
+  return a.sort(() => Math.random() - 0.5);
+}
+function setupCategorySelectors() {
+  if (newCat) newCat.innerHTML = CATEGORIES.map(c => `<option value="${c.key}">${c.name}</option>`).join('');
 }
