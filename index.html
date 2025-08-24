@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Quiz Culturale Italiano</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="apple-touch-icon" href="icon.png">
 <style>
 body { font-family: Arial, sans-serif; background:#f0f0f0; margin:0; text-align:center;}
 h1 { background:#0074D9;color:white;padding:20px; margin:0;}
@@ -21,21 +22,104 @@ button { padding:10px 20px;margin:10px;font-size:16px; cursor:pointer;}
 <body>
 <h1>Quiz Culturale Italiano</h1>
 <div id="quiz-container">
-<div id="status">
-<p id="timer">Tempo: 20</p>
-<p id="tokens">Gettoni: 0</p>
+  <div id="status">
+    <p id="timer">Tempo: 20</p>
+    <p id="tokens">Gettoni: 0</p>
+  </div>
+  <div id="question-container"></div>
+  <div id="help-container">
+    <button onclick="useFiftyFifty()">50/50 (-20 gettoni)</button>
+    <button onclick="useCorrectAnswer()">Risposta giusta (-100 gettoni)</button>
+  </div>
+  <div id="navigation">
+    <button onclick="startQuiz()">Inizia Quiz</button>
+  </div>
 </div>
-<div id="question-container"></div>
-<div id="help-container">
-<button onclick="useFiftyFifty()">50/50 (-20 gettoni)</button>
-<button onclick="useCorrectAnswer()">Risposta giusta (-100 gettoni)</button>
-</div>
-<div id="navigation">
-<button onclick="startQuiz()">Inizia Quiz</button>
-</div>
-</div>
+
 <script>
-// Inserisci qui il codice JS completo con le 80 domande, timer e logica gettoni/aiuti
+const questions = [
+    {category:"Cultura", question:"Qual è il fiume più lungo d'Italia?", answers:["Po","Arno","Tevere","Adige"], correct:0},
+    {category:"Cultura", question:"Chi ha scritto 'La Divina Commedia'?", answers:["Dante Alighieri","Boccaccio","Manzoni","Tasso"], correct:0},
+    {category:"Cultura", question:"Città famosa per il Carnevale con le maschere?", answers:["Venezia","Roma","Milano","Firenze"], correct:0},
+    {category:"Cultura", question:"Piatto tipico di Napoli?", answers:["Pizza","Risotto","Carbonara","Lasagna"], correct:0},
+    {category:"Cultura", question:"Simbolo di Roma?", answers:["Lupa capitolina","Colosseo","Piazza San Marco","Torre di Pisa"], correct:0},
+    {category:"Cultura", question:"Lingua ufficiale in Italia?", answers:["Italiano","Latino","Francese","Inglese"], correct:0},
+    {category:"Cultura", question:"Regione famosa per il vino Chianti?", answers:["Toscana","Piemonte","Veneto","Lombardia"], correct:0},
+    {category:"Cultura", question:"Chi dipinse la Cappella Sistina?", answers:["Michelangelo","Raffaello","Leonardo","Caravaggio"], correct:0},
+    {category:"Cultura", question:"Capitale d'Italia?", answers:["Roma","Milano","Napoli","Torino"], correct:0},
+    {category:"Cultura", question:"Isola più grande d'Italia?", answers:["Sicilia","Sardegna","Elba","Capri"], correct:0}
+];
+
+let currentQuestion = 0;
+let tokens = 0;
+let timer;
+let timeLeft = 20;
+
+function startQuiz(){
+    tokens=0;
+    currentQuestion=0;
+    document.getElementById("navigation").style.display="none";
+    showQuestion();
+}
+
+function showQuestion(){
+    if(currentQuestion>=questions.length){
+        document.getElementById("question-container").innerHTML=`<h2>Quiz Terminato!</h2><p>Gettoni totali: ${tokens}</p>`;
+        document.getElementById("help-container").style.display="none";
+        return;
+    }
+    const q=questions[currentQuestion];
+    document.getElementById("question-container").innerHTML=`
+    <h2>[${q.category}] ${q.question}</h2>
+    ${q.answers.map((ans,i)=>`<button class="answer-btn" onclick="checkAnswer(${i})">${ans}</button>`).join("")}`;
+    document.getElementById("tokens").innerText=`Gettoni: ${tokens}`;
+    timeLeft=20;
+    document.getElementById("timer").innerText=`Tempo: ${timeLeft}`;
+    clearInterval(timer);
+    timer=setInterval(()=>{
+        timeLeft--;
+        document.getElementById("timer").innerText=`Tempo: ${timeLeft}`;
+        if(timeLeft<=0){
+            clearInterval(timer);
+            currentQuestion++;
+            showQuestion();
+        }
+    },1000);
+}
+
+function checkAnswer(selected){
+    clearInterval(timer);
+    const q=questions[currentQuestion];
+    const buttons=document.querySelectorAll(".answer-btn");
+    buttons.forEach((btn,i)=>{
+        if(i===q.correct) btn.classList.add("correct");
+        else if(i===selected) btn.classList.add("wrong");
+        btn.disabled=true;
+    });
+    if(selected===q.correct) tokens+=10;
+    else tokens-=5;
+    setTimeout(()=>{
+        currentQuestion++;
+        showQuestion();
+    },1000);
+}
+
+function useFiftyFifty(){
+    if(tokens<20) return alert("Non hai abbastanza gettoni!");
+    tokens-=20;
+    const q=questions[currentQuestion];
+    const buttons=document.querySelectorAll(".answer-btn");
+    let wrongs=[...buttons].map((b,i)=>i).filter(i=>i!==q.correct);
+    wrongs.sort(()=>0.5-Math.random()).slice(0,2).forEach(i=>buttons[i].style.display="none");
+    document.getElementById("tokens").innerText=`Gettoni: ${tokens}`;
+}
+
+function useCorrectAnswer(){
+    if(tokens<100) return alert("Non hai abbastanza gettoni!");
+    tokens-=100;
+    checkAnswer(questions[currentQuestion].correct);
+    document.getElementById("tokens").innerText=`Gettoni: ${tokens}`;
+}
 </script>
 </body>
 </html>
