@@ -1,0 +1,308 @@
+{
+  "Storia": [
+    {
+      "question": "Chi fu il primo presidente della Repubblica Italiana?",
+      "options": [
+        "Enrico De Nicola",
+        "Luigi Einaudi",
+        "Giovanni Gronchi",
+        "Sandro Pertini"
+      ],
+      "answer": "Enrico De Nicola"
+    },
+    {
+      "question": "In che anno avvenne l’Unità d’Italia?",
+      "options": [
+        "1848",
+        "1861",
+        "1870",
+        "1911"
+      ],
+      "answer": "1861"
+    },
+    {
+      "question": "Quale città fu la prima capitale del Regno d’Italia?",
+      "options": [
+        "Firenze",
+        "Torino",
+        "Roma",
+        "Milano"
+      ],
+      "answer": "Torino"
+    },
+    {
+      "question": "Chi guidò la Spedizione dei Mille?",
+      "options": [
+        "Cavour",
+        "Garibaldi",
+        "Mazzini",
+        "Vittorio Emanuele II"
+      ],
+      "answer": "Garibaldi"
+    },
+    {
+      "question": "In quale anno l’Italia entrò nella Prima guerra mondiale?",
+      "options": [
+        "1914",
+        "1915",
+        "1916",
+        "1917"
+      ],
+      "answer": "1915"
+    },
+    {
+      "question": "Quale città fu distrutta dall’eruzione del Vesuvio nel 79 d.C.?",
+      "options": [
+        "Roma",
+        "Napoli",
+        "Pompei",
+        "Ercolano"
+      ],
+      "answer": "Pompei"
+    },
+    {
+      "question": "Chi fu il dittatore italiano durante la Seconda guerra mondiale?",
+      "options": [
+        "Mussolini",
+        "Cavour",
+        "Crispi",
+        "Badoglio"
+      ],
+      "answer": "Mussolini"
+    },
+    {
+      "question": "In che anno Roma divenne capitale d’Italia?",
+      "options": [
+        "1861",
+        "1865",
+        "1870",
+        "1880"
+      ],
+      "answer": "1870"
+    },
+    {
+      "question": "Chi fu il re d’Italia durante la Seconda guerra mondiale?",
+      "options": [
+        "Umberto II",
+        "Vittorio Emanuele III",
+        "Vittorio Emanuele II",
+        "Carlo Alberto"
+      ],
+      "answer": "Vittorio Emanuele III"
+    },
+    {
+      "question": "Chi scrisse 'Il Principe'?",
+      "options": [
+        "Machiavelli",
+        "Petrarca",
+        "Boccaccio",
+        "Ariosto"
+      ],
+      "answer": "Machiavelli"
+    }
+  ],
+  "Geografia": [
+    {
+      "question": "Qual è il fiume più lungo d’Italia?",
+      "options": [
+        "Arno",
+        "Tevere",
+        "Po",
+        "Adige"
+      ],
+      "answer": "Po"
+    },
+    {
+      "question": "Qual è la montagna più alta d’Italia?",
+      "options": [
+        "Monte Rosa",
+        "Gran Paradiso",
+        "Monte Bianco",
+        "Cervino"
+      ],
+      "answer": "Monte Bianco"
+    },
+    {
+      "question": "Qual è la regione più piccola d’Italia?",
+      "options": [
+        "Molise",
+        "Umbria",
+        "Valle d’Aosta",
+        "Liguria"
+      ],
+      "answer": "Valle d’Aosta"
+    },
+    {
+      "question": "Quale lago è il più esteso in Italia?",
+      "options": [
+        "Lago di Como",
+        "Lago Maggiore",
+        "Lago Trasimeno",
+        "Lago di Garda"
+      ],
+      "answer": "Lago di Garda"
+    },
+    {
+      "question": "Qual è la capitale della Sardegna?",
+      "options": [
+        "Cagliari",
+        "Sassari",
+        "Olbia",
+        "Oristano"
+      ],
+      "answer": "Cagliari"
+    },
+    {
+      "question": "Qual è la regione italiana senza mare più estesa?",
+      "options": [
+        "Piemonte",
+        "Lombardia",
+        "Umbria",
+        "Basilicata"
+      ],
+      "answer": "Lombardia"
+    },
+    {
+      "question": "Dove si trova la città dei Sassi, Patrimonio UNESCO?",
+      "options": [
+        "Lecce",
+        "Alberobello",
+        "Matera",
+        "Bari"
+      ],
+      "answer": "Matera"
+    },
+    {
+      "question": "Qual è l’isola italiana più grande dopo la Sicilia?",
+      "options": [
+        "Elba",
+        "Sardegna",
+        "Ischia",
+        "Capri"
+      ],
+      "answer": "Sardegna"
+    },
+    {
+      "question": "Dove sfocia il fiume Tevere?",
+      "options": [
+        "Venezia",
+        "Genova",
+        "Roma",
+        "Ostia"
+      ],
+      "answer": "Ostia"
+    },
+    {
+      "question": "Qual è la città più popolosa d’Italia?",
+      "options": [
+        "Milano",
+        "Napoli",
+        "Roma",
+        "Torino"
+      ],
+      "answer": "Roma"
+    }
+  ],
+  "Sport": [
+    {
+      "question": "Chi vinse i Mondiali di calcio nel 2006?",
+      "options": [
+        "Francia",
+        "Germania",
+        "Italia",
+        "Brasile"
+      ],
+      "answer": "Italia"
+    },
+    {
+      "question": "Chi è Valentino Rossi?",
+      "options": [
+        "Pilota di Formula 1",
+        "Pilota di MotoGP",
+        "Calciatore",
+        "Tennista"
+      ],
+      "answer": "Pilota di MotoGP"
+    },
+    {
+      "question": "Quante medaglie olimpiche vinse Michael Phelps?",
+      "options": [
+        "18",
+        "23",
+        "28",
+        "30"
+      ],
+      "answer": "28"
+    },
+    {
+      "question": "Chi è noto come 'O Rei' nel calcio?",
+      "options": [
+        "Maradona",
+        "Pelé",
+        "Ronaldo",
+        "Messi"
+      ],
+      "answer": "Pelé"
+    },
+    {
+      "question": "Chi vinse il primo mondiale di Formula 1?",
+      "options": [
+        "Fangio",
+        "Ascari",
+        "Farina",
+        "Moss"
+      ],
+      "answer": "Farina"
+    },
+    {
+      "question": "Chi è il massimo marcatore della Serie A?",
+      "options": [
+        "Piola",
+        "Totti",
+        "Immobile",
+        "Del Piero"
+      ],
+      "answer": "Piola"
+    },
+    {
+      "question": "Chi vinse Wimbledon 2021?",
+      "options": [
+        "Federer",
+        "Djokovic",
+        "Nadal",
+        "Berrettini"
+      ],
+      "answer": "Djokovic"
+    },
+    {
+      "question": "Quanti giocatori ci sono in campo a squadra nel calcio?",
+      "options": [
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
+      "answer": "11"
+    },
+    {
+      "question": "Chi ha vinto più Tour de France?",
+      "options": [
+        "Indurain",
+        "Hinault",
+        "Merckx",
+        "Armstrong"
+      ],
+      "answer": "Merckx"
+    },
+    {
+      "question": "Chi vinse gli Europei 2020?",
+      "options": [
+        "Francia",
+        "Inghilterra",
+        "Italia",
+        "Germania"
+      ],
+      "answer": "Italia"
+    }
+  ]
+}
