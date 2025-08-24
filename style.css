@@ -1,29 +1,12 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #222;
+  color: white;
+  text-align: center;
+}
 
-* { box-sizing: border-box; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
-body { margin: 0; background: #0f172a; color: #e2e8f0; }
-header { padding: 16px; display:flex; align-items:center; justify-content:space-between; border-bottom: 1px solid #334155; }
-h1 { margin: 0; font-size: 22px; }
-#hud { display:flex; gap:16px; font-weight:600; }
-main { max-width: 900px; margin: 0 auto; padding: 24px; }
-.menu { display: grid; grid-template-columns: 1fr; gap: 12px; max-width: 360px; margin: 24px auto; }
-button { border: 0; padding: 12px 16px; border-radius: 10px; cursor: pointer; font-weight: 600; }
-button.primary { background: #22c55e; color: #0b0f19; }
-button.ghost { background: transparent; border: 1px solid #475569; color: #e2e8f0; }
-button:disabled { opacity: .6; cursor: not-allowed; }
-.card { background: #111827; border: 1px solid #374151; padding: 20px; border-radius: 14px; }
-.options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 18px 0; }
-.options button { background: #1f2937; color:#e5e7eb; border:1px solid #374151; }
-.options button.correct { background: #16a34a; color: #052e16; border-color:#16a34a; }
-.options button.wrong { background: #b91c1c; color: #fff; border-color:#b91c1c; }
-.lifelines { display:flex; gap:10px; margin: 8px 0 16px; }
-.controls { display:flex; gap:10px; }
-#category-list { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; }
-.category { padding:12px; border-radius:12px; border:1px solid #374151; background:#0b1220; display:flex; flex-direction:column; gap:8px; }
-.category .title { font-weight:700; }
-.category.locked { opacity:.8; }
-.badge { font-size: 12px; padding: 4px 8px; border-radius: 999px; border:1px solid #334155; width: fit-content; }
-.filters { display:flex; gap:10px; align-items:center; margin-bottom:10px; }
-label { display:block; margin: 8px 0; }
-input, select { width: 100%; padding: 10px; border-radius: 8px; border:1px solid #334155; background:#0b1220; color:#e2e8f0; }
-#edit-list .row { display:grid; grid-template-columns: 1fr auto; align-items:center; gap:10px; padding:10px; border-bottom:1px solid #334155; }
-#edit-list .row button { padding:8px 10px; }
+button {
+  padding: 10px 20px;
+  margin: 5px;
+  font-size: 16px;
+}
