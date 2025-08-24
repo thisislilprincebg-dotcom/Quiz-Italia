@@ -1,22 +1,25 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiz Italia Modificato</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Quiz Italia</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<h1>Quiz Italia</h1>
 
-<button onclick="mostraModificaDomande()">Modifica Domande</button>
-<button onclick="continuaPartita()">Continua Partita</button>
+  <div id="main-menu">
+    <h1>Quiz Italia</h1>
+    <button id="start-game">Inizia partita</button>
+    <button id="continue-game">Continua partita</button>
+    <button id="add-questions">Aggiungi domande</button>
+    <button id="edit-questions">Modifica domande</button>
+  </div>
 
-<div id="modificaDomandeContainer"></div>
-<div id="quizContainer"></div>
+  <div id="game-area" style="display:none;"></div>
+  <div id="question-form" style="display:none;"></div>
+  <div id="edit-area" style="display:none;"></div>
 
-<script src="questions.js"></script>
-<script src="main.js"></script>
+  <script src="questions.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
