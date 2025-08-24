@@ -1,27 +1,41 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
 <meta charset="UTF-8">
 <title>Quiz Culturale Italiano</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body { font-family: Arial; background:#f0f0f0; text-align:center;}
-h1 { background:#0074D9;color:white;padding:20px;}
-#quiz-container { margin:30px auto; width:80%; background:white; padding:20px; border-radius:10px;}
+body { font-family: Arial, sans-serif; background:#f0f0f0; margin:0; text-align:center;}
+h1 { background:#0074D9;color:white;padding:20px; margin:0;}
+#quiz-container { margin:20px auto; width:90%; max-width:600px; background:white; padding:20px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.2);}
 button { padding:10px 20px;margin:10px;font-size:16px; cursor:pointer;}
-.answer-btn { display:block; margin:10px auto; padding:10px; width:60%; background:#0074D9;color:white; border:none; border-radius:5px;}
+.answer-btn { display:block; margin:10px auto; padding:10px; width:80%; max-width:300px; background:#0074D9;color:white; border:none; border-radius:5px;}
 .answer-btn:hover { background:#005fa3;}
 .correct { background:green !important; }
 .wrong { background:red !important; }
+#help-container { margin-top:10px; }
+#timer, #tokens { font-size:18px; margin:5px; }
+@media (max-width:400px){ .answer-btn{width:100%; font-size:14px;} }
 </style>
 </head>
 <body>
 <h1>Quiz Culturale Italiano</h1>
 <div id="quiz-container">
-<p>Quiz avanzato con 80 domande</p>
+<div id="status">
+<p id="timer">Tempo: 20</p>
+<p id="tokens">Gettoni: 0</p>
+</div>
+<div id="question-container"></div>
+<div id="help-container">
+<button onclick="useFiftyFifty()">50/50 (-20 gettoni)</button>
+<button onclick="useCorrectAnswer()">Risposta giusta (-100 gettoni)</button>
+</div>
+<div id="navigation">
+<button onclick="startQuiz()">Inizia Quiz</button>
+</div>
 </div>
 <script>
-// Qui va tutto il codice JS con 80 domande, timer, gettoni, aiuti
+// Inserisci qui il codice JS completo con le 80 domande, timer e logica gettoni/aiuti
 </script>
 </body>
 </html>
